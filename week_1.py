@@ -1,9 +1,10 @@
-import math
 
+# 1. Python ile tek nöron forward pass yaz
+import math
 def sigmoid(z):
     return 1/(1+math.exp(z))
 
-def neuron_forward(inputs, weights, bias):
+def forward(inputs, weights, bias):
     z = sum(x*w for x,w in zip(inputs, weights)) + bias
     activation = sigmoid(z=z)
 
@@ -13,16 +14,17 @@ inputs = [1.2, 0.5, -1.5]
 weights = [0.4, -0.7, 0.2]
 bias = 0.1
 
-output = neuron_forward(inputs, weights, bias)
+output = forward(inputs, weights, bias)
 print(f"neuron outputs: {output:.4f}")
 
 #======================================================
+# 2. Birden fazla nörondan oluşan küçük bir katman kur, forward pass'i buna genişlet
 import math
 
 def sigmoid(z):
     return 1/(1+math.exp(z))
 
-def layer_forward(inputs, weights, bias):
+def forward2(inputs, weights, bias):
     outputs=[]
 
     for neuron_weigths, neuron_bias in zip(weights,bias):
@@ -38,12 +40,13 @@ weights = [
 ]
 
 biases = [0.1, -0.3]
-outputs = layer_forward(inputs, weights, biases)
+outputs = forward2(inputs, weights, biases)
 
 for i, val in enumerate(outputs, 1):
     print(f"neuron {i} output: {val:.4f}")
 
 # ===============================================================================
+# 3. Basit bir loss fonksiyonu yaz.
 def mean_squared_error(true,predict):
     squared_errors=[(y-y_p)**2 for y,y_p in zip(true,predict)]
 
@@ -57,6 +60,7 @@ loss_value = mean_squared_error(true, pred)
 print(f"MSE loss val: {loss_value:.4f}")
 
 #============================================================
+# 4. Parametreleri manuel değiştirerek loss'un nasıl değiştiğini gözlemle, loss eğrisini çiz.
 import matplotlib.pyplot as plt
 
 X = [1.0, 2.0, 3.0, 4.0]
@@ -65,10 +69,13 @@ y_true = [3.0, 5.0, 7.0, 9.0]
 def forward(x, w, b):
     return w * x + b
 
+def mean_squared_error(true, predict):
+    squared_errors = [(y - y_p)**2 for y, y_p in zip(true, predict)]
+    return sum(squared_errors) / len(true)
+
 def compute_mse(X, y_true, w, b):
-    n = len(X)
-    squared_errors = [(y - forward(x, w, b)) ** 2 for x, y in zip(X, y_true)]
-    return sum(squared_errors) / n
+    y_pred = [forward(x, w, b) for x in X]
+    return mean_squared_error(y_true, y_pred)
 
 fixed_b = 1.0
 weights = [i * 0.1 for i in range(-20, 61)]
@@ -89,23 +96,24 @@ plt.grid(True, linestyle="--", alpha=0.5)
 plt.legend()
 plt.show()
 #==================================================================== 
-
+# Sayısal türev (numerical derivative) ile basit bir gradient descent döngüsü kur: parametreyi küçük adımlarla güncelleyerek loss'u düşür.
 X = [1.0, 2.0, 3.0, 4.0]
 y_true = [3.0, 5.0, 7.0, 9.0]
 
 def forward(x, w, b):
     return w * x + b
 
+def mean_squared_error(true, predict):
+    squared_errors = [(y - y_p)**2 for y, y_p in zip(true, predict)]
+    return sum(squared_errors) / len(true)
+
 def compute_loss(w, b):
-    n = len(X)
-    squared_errors = [(y - forward(x, w, b)) ** 2 for x, y in zip(X, y_true)]
-    return sum(squared_errors) / n
+    y_pred = [forward(x, w, b) for x in X]
+    return mean_squared_error(y_true, y_pred)
 
 def compute_gradients(w, b, h=1e-5):
     grad_w = (compute_loss(w + h, b) - compute_loss(w - h, b)) / (2 * h)
-    
     grad_b = (compute_loss(w, b + h) - compute_loss(w, b - h)) / (2 * h)
-    
     return grad_w, grad_b
 
 w = 0.2
